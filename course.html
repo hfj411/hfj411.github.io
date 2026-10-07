@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>课程时间冲突辅助筛查工具</title>
+    <style>
+*{box-sizing:border-box;font-family:system-ui}
+body{padding:16px;max-width:700px;margin:0 auto;}
+.block{margin-bottom:16px}
+textarea{width:100%;height:140px;padding:10px;border:1px solid #ccc;border-radius:8px;font-size:16px}
+button{background:#2563eb;color:white;border:none;padding:12px 20px;border-radius:8px;font-size:16px;margin:4px 0;cursor:pointer}
+#result{padding:12px;border:1px solid #aaa;border-radius:8px;white-space:pre-line;min-height:120px}
+    </style>
+</head>
+<body>
+    <h2>✅固定课表（已修课程）</h2>
+    <div class="block">
+        <textarea id="baseInput" placeholder="格式：课程名称｜星期｜节次｜周次
+示例：高等数学｜周四｜1-2｜5-14"></textarea>
+        <br>
+        <button onclick="parseBase()">提取固定课表</button>
+    </div>
+
+    <h2>📋备选选修课</h2>
+    <div class="block">
+        <textarea id="optInput" placeholder="格式：课程名称｜星期｜节次｜周次
+示例：大学语文｜周二｜5-6｜3-12"></textarea>
+        <br>
+        <button onclick="parseOpt()">提取备选课程</button>
+    </div>
+
+    <button onclick="checkAll()">🔍自动检测冲突</button>
+    <h3>检测结果：</h3>
+    <div id="result"></div>
+
+<script>
+let baseList = [];
+let optList = [];
+
+function parseCourse(text){
+    const arr = [];
+    const lines = text.split("\n");
+    for(let line of lines){
+        line = line.trim();
+        if(!line) continue;
+        const sp = line.split("｜");
+        if(sp.length<4) continue;
+        const name = sp[0].trim();
+        const weekDay = sp[1].trim();
+        const secRange = sp[2].split("-").map(Number);
+        const weekRange = sp[3].split("-").map(Number);
+        arr.push({
+            name,
+            weekDay,
+            sSec:secRange[0],eSec:secRange[1],
+            sWeek:weekRange[0],eWeek:weekRange[1]
+        })
+    }
+    return arr;
+}
+function parseBase(){
+    baseList = parseCourse(document.getElementById("baseInput").value);
+    alert(`已读取${baseList.length}条固定课程`);
+}
+function parseOpt(){
+    optList = parseCourse(document.getElementById("optInput").value);
+    alert(`已读取${optList.length}条备选课程`);
+}
+function isConflict(a,b){
+    if(a.weekDay!==b.weekDay) return false;
+    //周重叠
+    const weekOverlap = !(a.eWeek < b.sWeek || b.eWeek < a.sWeek);
+    if(!weekOverlap) return false;
+    //节次重叠
+    const secOverlap = !(a.eSec < b.sSec || b.eSec < a.sSec);
+    return secOverlap;
+}
+function checkAll(){
+    let res = "=====冲突检测结果=====\n";
+    for(let opt of optList){
+        let hasCon = false;
+        let conName = "";
+        for(let base of baseList){
+            if(isConflict(opt,base)){
+                hasCon = true;
+                conName = base.name;
+                break;
+            }
+        }
+        如果(HASCON){
+            res+=❌（冲突）${选择.姓名}，与${CONNAME}时间冲突\n`
+}其他{
+res+=✅【可选】${选择.姓名}\n`
+        }
+    }
+    如果(optlist.长度===0) res+="请先录入备选课程并提取！";
+    文件.getElementById("结果").内部文本=res;
+}
+</script>
+</body>
+</html>
